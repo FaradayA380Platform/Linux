@@ -1,0 +1,632 @@
+/*
+ * Copyright (C) 2014 Faraday, Inc. (www.faraday-tech.com)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/pinctrl/pinctrl-gc1610.h>
+#include <dt-bindings/clock/clock-gc1610.h>
+
+/ {
+	model = "gc1610";
+	compatible = "arm,faraday-soc-gc1610","faraday-soc-v8";
+	interrupt-parent = <&gic>;
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	aliases {
+		serial0 = &uart0;
+		//serial1 = &uart1;
+		//serial2 = &uart2;
+	};
+
+	cpus {
+		#address-cells = <2>;
+		#size-cells = <0>;
+		
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53","arm,armv8";
+			clock-frequency = <1000000000>;
+			cci-control-port = <&cci_control3>;			
+			reg = <0x0 0x000>;
+			enable-method = "spin-table";
+		};
+		
+		cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53","arm,armv8";
+			clock-frequency = <1000000000>;
+			reg = <0x0 0x001>;
+			enable-method = "spin-table";
+			cpu-release-addr = <0x0 0x201008a0>;				
+		};
+		
+	}; 
+
+	memory@80000000 {
+		device_type = "memory";
+		reg = <0x0 0x80000000 0x0 0x10000000>;
+	};
+
+	gic: interrupt-controller@400000 {
+		compatible = "arm,gic-v3";
+		#interrupt-cells = <3>;
+		#address-cells = <0>;
+		#size-cells = <2>;
+		interrupt-controller;
+		#redistributor-regions = <1>;
+		#redistributor-stride = <0x0 0x40000>;	
+		reg = <0 0x400000 0 0x40000>,    /* GICD */
+		      <0 0x440000 0 0x40000>,   /* GICR */
+		      <0x0 0x3f000000 0x0 0x2000>,  /* GICC */
+/*		      <0x0 0x500000 0x0 0x1000>,	*/
+		      <0x0 0x510000 0x0 0x1000>,  /* GICH */
+		      <0x0 0x520000 0x0 0x20000>; /* GICV */	
+	};
+
+	timer {
+		compatible = "arm,armv8-timer";
+		interrupt-parent = <&gic>;
+		interrupts = <GIC_PPI 13 (GIC_CPU_MASK_RAW(0xff)|IRQ_TYPE_LEVEL_LOW)>,
+		             <GIC_PPI 14 (GIC_CPU_MASK_RAW(0xff)|IRQ_TYPE_LEVEL_LOW)>,
+		             <GIC_PPI 11 (GIC_CPU_MASK_RAW(0xff)|IRQ_TYPE_LEVEL_LOW)>,
+		             <GIC_PPI 10 (GIC_CPU_MASK_RAW(0xff)|IRQ_TYPE_LEVEL_LOW)>;
+		clock-frequency = <1000000000>;
+		status = "okay";
+	};	
+
+	chosen {
+		bootargs = "mem=256M console=ttyS0,115200 earlycon=uart8250,mmio32,0x20700000 loglevel=8 dyndbg=\"file 1.c +p\"";
+/*		stdout-path = &uart0;   */
+	};
+	
+	clk: clocks@20100000 {
+		compatible = "faraday,gc1610-clk";
+		reg = <0x0 0x20100000 0x0 0xa0000>;
+		reg-names = "scu";
+		#clock-cells = <1>;
+	};
+
+	apb: apb: xta@125M {
+		#clock-cells = <0>;
+		compatible = "fixed-clock";
+		clock-frequency = <125000000>;
+	};
+
+	pinctrl {
+		compatible = "ftscu010-pinmux", "pinctrl-GC1610";
+		reg = <0x0 0x20100000 0x0 0xa000>;
+		
+		pinctrl_ftgpio010_sel0: pinctrl_ftgpio010_sel0 {
+			scu010,function = <GC1610_MUX_FTGPIO010_SEL0>;
+		};
+
+		pinctrl_ftgpio010_sel1: pinctrl_ftgpio010_sel1 {
+			scu010,function = <GC1610_MUX_FTGPIO010_SEL1>;
+		};		
+
+		pinctrl_ftspi020: pinctrl_ftspi020 {
+			scu010,function = <GC1610_MUX_FTSPI020>;
+		};
+
+		pinctrl_ftuart010: pinctrl_ftuart010 {
+			scu010,function = <GC1610_MUX_FTUART010>;
+		};
+
+		pinctrl_ftuart010_1: pinctrl_ftuart010_1 {
+			scu010,function = <GC1610_MUX_FTUART010_1>;
+		};
+		
+		pinctrl_ftuart010_2: pinctrl_ftuart010_2 {
+			scu010,function = <GC1610_MUX_FTUART010_2>;
+		};
+		
+		pinctrl_ftiic010: pinctrl_ftiic010 {
+			scu010,function = <GC1610_MUX_FTIIC010>;
+		};
+		
+		pinctrl_ftiic010_1: pinctrl_ftiic010_1 {
+			scu010,function = <GC1610_MUX_FTIIC010_1>;
+		};
+		
+		pinctrl_ftssp010: pinctrl_ftssp010 {
+			scu010,function = <GC1610_MUX_FTSSP010>;
+		};
+		
+		pinctrl_pcie_wrap: pinctrl_pcie_wrap {
+			scu010,function = <GC1610_MUX_PCIE_WRAP>;
+		};
+
+		pinctrl_pcie_wrap_1: pinctrl_pcie_wrap_1 {
+			scu010,function = <GC1610_MUX_PCIE_WRAP_1>;
+		};		
+		
+		pinctrl_usb3: pinctrl_usb3 {
+			scu010,function = <GC1610_MUX_SBS_USB3_TOP>;
+		};
+		
+		pinctrl_usb2: pinctrl_usb2 {
+			scu010,function = <GC1610_MUX_SBS_USB2_TOP>;
+		};	
+		
+		pinctrl_ftnanc024: pinctrl_ftnanc024 {
+			scu010,function = <GC1610_MUX_FTNANDC024>;
+		};			
+	};
+
+	soc {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		compatible = "simple-bus";
+		ranges;
+
+		uart0: uart@20700000 {
+			compatible = "of_serial", "ns16550a","of_serial,ns16550_serial", "ns16550";
+			clock-frequency = <31250000>;
+			reg = <0x0 0x20700000 0x0 0x1000>;
+			reg-offset = <0>;
+			reg-shift = <2>;
+			reg-io-width = <4>;
+			no-loopback-test;
+			interrupts = <GIC_SPI 19 IRQ_TYPE_LEVEL_HIGH>;
+	/*		clocks = <&clk GC1610_UART0_PCLK_EN>;
+			clock-names = "uclk_0";				*/
+			status = "okay";
+		};
+
+
+		uart1: uart@20800000 {
+			compatible = "of_serial", "ns16550a","of_serial,ns16550_serial", "ns16550";
+			clock-frequency = <31250000>;
+			reg = <0x0 0x20800000 0x0 0x1000>;
+			reg-offset = <0>;
+			reg-shift = <2>;
+			reg-io-width = <4>;
+			no-loopback-test;
+			interrupts = <GIC_SPI 20 IRQ_TYPE_LEVEL_HIGH>;
+	/*		clocks = <&clk GC1610_UART1_PCLK_EN>;
+			clock-names = "uclk_1";				*/
+			status = "okay";
+		};
+		
+		uart2: uart@20900000 {
+			compatible = "of_serial", "ns16550a","of_serial,ns16550_serial", "ns16550";
+			clock-frequency = <31250000>;
+			reg = <0x0 0x20900000 0x0 0x1000>;
+			reg-offset = <0>;
+			reg-shift = <2>;
+			reg-io-width = <4>;
+			no-loopback-test;
+			interrupts = <GIC_SPI 21 IRQ_TYPE_LEVEL_HIGH>;
+	/*		clocks = <&clk GC1610_UART2_PCLK_EN>;
+			clock-names = "uclk_2";				*/
+			pinctrl-0 = <&pinctrl_ftuart010_2>;
+			pinctrl-names = "default";
+			status = "disabled";
+		};		
+
+		sys_timer0: timer@20200000 {
+			compatible = "faraday,fttmr010";
+			interrupt-parent = <&gic>;
+			reg = <0x0 0x20200000 0x0 0x1000>;
+			interrupts = <GIC_SPI 5 IRQ_TYPE_LEVEL_HIGH>;
+/*			clocks = <&clk GC1610_TMR0_PCLK_EN>;
+			clock-names = "pclk";*/
+			clocks = <&apb>;
+			clock-names = "pclk";			
+			status = "disabled";
+		};
+		
+		sys_timer1: timer@20300000 {
+			compatible = "faraday,fttmr010";
+			interrupt-parent = <&gic>;
+			reg = <0x0 0x20300000 0x0 0x1000>;
+			interrupts = <GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>;
+			/*clocks = <&clk GC1610_TMR1_PCLK_EN>;
+			clock-names = "pclk";*/
+			clocks = <&apb>;
+			clock-names = "pclk";				
+			status = "disabled";
+		};
+
+		sys_timer2: timer@20400000 {
+			compatible = "faraday,fttmr010";
+			interrupt-parent = <&gic>;
+			reg = <0x0 0x20400000 0x0 0x1000>;
+			interrupts = <GIC_SPI 13 IRQ_TYPE_LEVEL_HIGH>;
+			/*clocks = <&clk GC1610_TMR2_PCLK_EN>;
+			clock-names = "pclk";*/
+			clocks = <&apb>;
+			clock-names = "pclk";				
+			status = "disabled";
+		};
+
+		sys_timer3: timer@20500000 {
+			compatible = "faraday,fttmr010";
+			interrupt-parent = <&gic>;
+			reg = <0x0 0x20500000 0x0 0x1000>;
+			interrupts = <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>;
+			/*clocks = <&clk GC1610_TMR3_PCLK_EN>;
+			clock-names = "pclk";*/
+			clocks = <&apb>;
+			clock-names = "pclk";				
+			status = "disabled";
+		};
+
+		wdt0: wdt@20600000 {
+			compatible = "faraday,ftwdt010";
+			interrupt-parent = <&gic>;
+			reg = <0x0 0x20600000 0x0 0x1000>;
+			interrupts = <GIC_SPI 18 IRQ_TYPE_EDGE_RISING>;
+			clocks = <&clk GC1610_WDT0_PCLK_EN>;
+			clock-names = "pclk";
+			timeout-sec = <30>;
+			status = "disabled";
+		};
+
+		cci: cci@30000000 {
+			compatible = "arm,cci-500";
+			reg = <0x0 0x30000000 0x0 0xA0000>;
+			ranges = <0x0 0x0 0x30000000 0x10000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			cci_control0: slave-if@1000 {
+				compatible = "arm,cci-500-ctrl-if";
+				interface-type = "ace-lite";
+				reg = <0x1000 0x1000>;
+			};
+			
+			cci_control1: slave-if@2000 {
+				compatible = "arm,cci-500-ctrl-if";
+				interface-type = "ace-lite";
+				reg = <0x2000 0x1000>;
+			};
+			
+
+			cci_control3: slave-if@4000 {
+				compatible = "arm,cci-500-ctrl-if";
+				interface-type = "ace-lite";
+				reg = <0x4000 0x1000>;
+			};
+			
+			cci_control4: slave-if@5000 {
+				compatible = "arm,cci-500-ctrl-if";
+				interface-type = "ace-lite";
+				reg = <0x5000 0x1000>;
+			};			
+
+			pmu@10000 {
+				compatible = "arm,cci-500-pmu,r0";
+				reg = <0x0 0x10000 0x0 0x90000>;
+				interrupt-parent = <&gic>;
+				interrupts =<GIC_SPI 56 IRQ_TYPE_LEVEL_HIGH>,
+							<GIC_SPI 57 IRQ_TYPE_LEVEL_HIGH>,
+							<GIC_SPI 58 IRQ_TYPE_LEVEL_HIGH>,
+							<GIC_SPI 59 IRQ_TYPE_LEVEL_HIGH>,
+							<GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>,
+							<GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>,
+							<GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>,
+							<GIC_SPI 63 IRQ_TYPE_LEVEL_HIGH>;
+			};
+		};
+
+		spi0: spi@00300000 {
+			compatible = "faraday,ftspi020";
+			interrupt-parent = <&gic>;
+			broken-flash-reset;
+			reg = <0x0 0x00300000 0x0 0x1000>,
+			      <0x0 0x00100000 0x0 0x100000>;
+			reg-names = "ctrl-port", "damr-port";
+			
+			interrupts = <GIC_SPI 43 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk GC1610_SPI_ACLK_EN>;				
+			clock-names = "spiclk";
+			pinctrl-0 = <&pinctrl_ftspi020>;
+			pinctrl-names = "default";	
+			
+			status = "disabled";
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+
+			/*
+			w25q256jv: flash@0 { //0x010215
+				compatible = "jedec,spi-nor"; 
+				spi-max-frequency = <133000000>;
+				spi-tx-bus-width = <2>;
+				spi-rx-bus-width = <2>;
+				reg = <0x0>;
+				is-nand = <0>;
+			};
+			*/
+			
+			F50L4G41XB: flash@1 { //0xefaa21
+				compatible = "spi-nand";
+				spi-max-frequency = <50000000>;
+				spi-tx-bus-width = <2>;
+				spi-rx-bus-width = <2>;
+				reg = <0x0>;
+				is-nand = <0>;
+			};
+		};
+
+
+		tdc0: thermal@20d00000 {
+			compatible = "faraday,fttdcc010";
+			interrupt-parent = <&gic>;
+			reg = <0x0 0x20d00000 0x0 0x1000>;
+			interrupts = <GIC_SPI 25 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk GC1610_TDC_PCLK_EN>;
+			clock-names = "tdc0_clk";			
+			status = "disabled";
+		};
+
+		i2c0: i2c@20a00000 {
+			compatible = "faraday,ftiic010";
+			interrupt-parent = <&gic>;
+			dev_id = <0>;
+			reg = <0x0 0x20a00000 0x0 0x1000>;
+			interrupts = <GIC_SPI 22 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk GC1610_I2C0_PCLK_EN>;
+			clock-names = "pclk";
+			pinctrl-0 = <&pinctrl_ftiic010>;
+			pinctrl-names = "default";				
+			status = "disabled";
+		};	
+
+		i2c1: i2c@20b00000 {
+			compatible = "faraday,ftiic010";
+			interrupt-parent = <&gic>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			dev_id = <1>;
+			reg = <0x0 0x20b00000 0x0 0x1000>;
+			interrupts = <GIC_SPI 23 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk GC1610_I2C1_PCLK_EN>;
+			clock-names = "pclk";
+			pinctrl-0 = <&pinctrl_ftiic010_1>;
+			pinctrl-names = "default";				
+			status = "disabled";
+		};
+
+		gpio0: gpio@20e00000 {
+			compatible = "faraday,ftgpio010";
+			interrupt-parent = <&gic>;
+			dev_id = <0>;
+			#gpio-cells = <2>;
+			reg = <0x0 0x20e00000 0x0 0x1000>;
+			interrupts = <GIC_SPI 26 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk GC1610_GPIO_PCLK_EN>;
+			clock-names = "pclk";
+			pinctrl-0 = <&pinctrl_ftgpio010_sel0>;
+			pinctrl-names = "sleep";				
+			status = "disabled";
+		};
+	 
+		nand0: nand@10000000 {
+			compatible = "faraday,ftnandc024";
+			interrupt-parent = <&gic>;			
+			reg = <0x0 0x10000000 0x0 0x10000>,<0x0 0x10100000 0x0 0x10000>;
+			interrupts = <GIC_SPI 36 IRQ_TYPE_LEVEL_HIGH>;				  
+			clocks = <&clk GC1610_NANDC_EN>;
+			clock-names = "nandc_clk";	
+			pinctrl-0 = <&pinctrl_ftnanc024>;
+			pinctrl-names = "default";				
+			status = "okay";			
+		};
+
+		ssp0: spi@20c00000 {
+			compatible = "faraday,ftssp010-spi";
+			interrupt-parent = <&gic>;
+			dev_id = <0>;
+			reg = <0x0 0x20c00000 0x0 0x1000>;
+			interrupts = <GIC_SPI 24 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk GC1610_SSP_PCLK_EN>;
+			clock-names = "sspclk";			
+			pinctrl-0 = <&pinctrl_ftssp010>;
+			pinctrl-names = "sleep";
+			status = "disabled";
+			
+			#address-cells = <1>;
+			#size-cells = <0>;
+			spidev0: master@0 {
+				compatible = "rohm,dh2228fv";
+				spi-max-frequency = <20000000>;
+				reg = <0>;
+			};
+		};
+
+/*			
+		dma0: ftdmac030@22f00000 {
+			compatible = "faraday,ftdmac030";
+			interrupt-parent = <&gic>;
+			dma-coherent;			
+			#dma-cells = <3>;
+			reg = <0x0 0x22f00000 0x0 0x1000>;
+			dev_id = <0>;
+			interrupts = <GIC_SPI 46 IRQ_TYPE_LEVEL_HIGH>;			
+			status = "okay";
+
+		}; 
+		dma1: ftdmac030@22100000 { 
+			compatible = "faraday,ftdmac030";
+			interrupt-parent = <&gic>;
+			dma-coherent; 			
+			#dma-cells = <1>;
+			reg = <0x0 0x22100000 0x0 0x1000>;
+			dev_id = <0>;
+			interrupts = <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
+			status = "okay";
+
+		};  */
+/*
+		cci@30000000 {
+			compatible = "arm,cci-500";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			reg = <0x0 0x30000000 0 0x1000>;
+			ranges = <0x0 0x0 0x30000000 0x10000>;
+
+			cci_control0: slave-if@1000 {
+				compatible = "arm,cci-500-ctrl-if";
+				interface-type = "ace-lite";
+				reg = <0x1000 0x1000>;
+			};
+
+			cci_control1: slave-if@2000 {
+				compatible = "arm,cci-500-ctrl-if";
+				interface-type = "ace";
+				reg = <0x2000 0x1000>;
+			};
+
+			cci_control2: slave-if@3000 {
+				compatible = "arm,cci-500-ctrl-if";
+				interface-type = "ace";
+				reg = <0x3000 0x1000>;
+			};
+			cci_control3: slave-if@4000 {
+				compatible = "arm,cci-500-ctrl-if";
+				interface-type = "ace";
+				reg = <0x4000 0x1000>;
+			};
+			cci_control4: slave-if@5000 {
+				compatible = "arm,cci-500-ctrl-if";
+				interface-type = "ace";
+				reg = <0x5000 0x1000>;
+			};
+		};
+*/
+		aes0: aes@10300000 {
+			compatible = "faraday,ftaes020";
+			interrupt-parent = <&gic>;
+			reg = <0x0 0x10300000 0x0 0x4000>;
+			interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk GC1610_AES_EN>;				
+			clock-names = "aes_clk";					
+			status = "disabled";
+		};
+	
+
+/*below ASIC*/
+		usb0: usb_otg@10200000 {
+			compatible = "faraday,fotg210";
+			interrupt-parent = <&gic>;
+			reg = <0x0 0x10200000 0x0 0x1000>;
+			interrupts = <GIC_SPI 45 IRQ_TYPE_LEVEL_HIGH>;
+			status = "disabled";
+		};
+
+		usb1: usb_udc@10200000 {
+			compatible = "faraday,fotg210_udc";
+			interrupt-parent = <&gic>;
+			reg = <0x0 0x10200000 0x0 0x1000>;
+			interrupts = <GIC_SPI 45 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk GC1610_OTG210_PCLK_EN>,<&clk GC1610_USB2_EN>;				
+			clock-names = "otg210_clk","ahb_clk";
+/*			pinctrl-0 = <&pinctrl_usb2>;
+			pinctrl-names = "default";	*/
+			status = "disabled";
+		};
+		
+		usb2: usb_hcd@10200000 {
+			compatible = "faraday,fotg210_hcd";
+			interrupt-parent = <&gic>;
+			reg = <0x0 0x10200000 0x0 0x1000>;
+			interrupts = <GIC_SPI 45 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk GC1610_OTG210_PCLK_EN>,<&clk GC1610_USB2_EN>;		
+			clock-names = "otg210_clk","ahb_clk";
+/*			pinctrl-0 = <&pinctrl_usb2>;
+			pinctrl-names = "default";	*/
+			status = "disabled";
+		};
+		
+		usb3: otg@00600000 {
+			compatible = "faraday,fotg330";
+			interrupt-parent = <&gic>;
+			reg = <0x0 0x00600000 0x0 0x4000>;
+			interrupts = <GIC_SPI 46 IRQ_TYPE_LEVEL_HIGH>;
+			dma-coherent;			
+			clocks = <&clk GC1610_OTG330_PCLK_EN>;				
+			clock-names = "otg330_clk";	
+/*			pinctrl-0 = <&pinctrl_usb3>;
+			pinctrl-names = "default";		*/
+			status = "disabled";
+		};
+		
+		usb4: xhci@00600000 {
+			compatible = "xhci-platform";
+			interrupt-parent = <&gic>;
+			reg = <0x0 0x00600000 0x0 0x2000>;
+			interrupts = <GIC_SPI 46 IRQ_TYPE_LEVEL_HIGH>;
+			dma-coherent;	
+			clocks = <&clk GC1610_OTG330_PCLK_EN>,<&clk GC1610_OTG330_ACLK_EN>;
+			clock-names = "apb_clk","axi_clk";
+			pinctrl-0 = <&pinctrl_usb3>;
+			pinctrl-names = "default";			
+			status = "disabled";
+		};
+		
+		usb5: gadget@00600000 {
+			compatible = "faraday,fusb300";
+			interrupt-parent = <&gic>;			
+/*			dma-coherent;			*/
+			reg = <0x0 0x00600000 0x0 0x4000>;
+			interrupts = <GIC_SPI 46 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk GC1610_OTG330_PCLK_EN>,<&clk GC1610_OTG330_ACLK_EN>;				
+			clock-names = "apb_clk","axi_clk";	
+/*			pinctrl-0 = <&pinctrl_usb3>;
+			pinctrl-names = "default";		*/
+			status = "okay";
+		};
+/*above asic*/
+
+		pcie0: pcie@22100000 {
+			compatible = "faraday,ftpciesnps330";
+			interrupt-parent = <&gic>;
+			num-lanes = <1>;
+			bus-range = <0x0 0xff>;
+			reg = <0x0 0x22100000 0x0 0x00001000>;
+			#address-cells = <3>;
+			#size-cells = <2>;
+			ranges = <0x00000000 0x0 0x40000000 0x0 0x40000000 0x0 0x01000000     /* configuration space */
+			          0x02000000 0x0 0x41000000 0x0 0x41000000 0x0 0x1f000000>;   /* non-prefetchable memory */			  
+			interrupts = <GIC_SPI 48 IRQ_TYPE_EDGE_RISING>;
+			#interrupt-cells = <1>;
+			interrupt-map-mask = <0 0 0 0>;
+			interrupt-map = <0 0 0 0 &gic GIC_SPI 8 IRQ_TYPE_EDGE_RISING>;
+			clocks = <&clk GC1610_PCIE0_PCLK_EN>,<&clk GC1610_PCIE0_MST_ACLK_EN>,<&clk GC1610_PCIE0_SLV_EN>;
+			clock-names = "pclk","aclk","slv_clk";
+/*			pinctrl-0 = <&pinctrl_pcie_wrap>;
+			pinctrl-names = "default";	*/			
+			status = "disabled";
+		};
+		pcie1: pcie@22300000 {
+			compatible = "faraday,ftpciesnps330";
+			interrupt-parent = <&gic>;
+			num-lanes = <4>;
+			bus-range = <0x0 0xff>;
+			reg = <0x0 0x22300000 0x0 0x00001000>;
+
+			#address-cells = <3>;
+			#size-cells = <2>;
+			ranges = <0x00000000 0x0 0x60000000 0x0 0x60000000 0x0 0x01000000   /* configuration space */
+			          0x02000000 0x0 0x61000000 0x0 0x61000000 0x0 0x1f000000>; /* non-prefetchable memory */
+			interrupts = <GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH>;
+			#interrupt-cells = <1>;
+			interrupt-map-mask = <0 0 0 0>;
+			interrupt-map = <0 0 0 0 &gic GIC_SPI 9 IRQ_TYPE_EDGE_RISING>;
+			clocks = <&clk GC1610_PCIE1_PCLK_EN>,<&clk GC1610_PCIE1_MST_ACLK_EN>,<&clk GC1610_PCIE1_SLV_EN>;
+			clock-names = "pclk";
+/*			pinctrl-0 = <&pinctrl_pcie_wrap>;
+			pinctrl-names = "default";	*/					
+			status = "disabled";
+		};		
+	};
+};

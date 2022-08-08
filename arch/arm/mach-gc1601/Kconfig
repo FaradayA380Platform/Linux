@@ -1,0 +1,17 @@
+#
+# arch/arm/mach-gc1601/Kconfig
+#
+
+if MACH_GC1601
+
+menu "Faraday GC1601 Platform Options"
+	depends on MACH_GC1601
+
+config MACH_GC1601_VP
+	bool "Faraday GC1601 VP"
+	help
+	  Say Y here if you are using FARADAY GC1601 VP
+
+endmenu
+
+endif

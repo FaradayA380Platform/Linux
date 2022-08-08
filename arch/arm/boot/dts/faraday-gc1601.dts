@@ -1,0 +1,304 @@
+/*
+ * Copyright (C) 2020 Faraday, Inc. (www.faraday-tech.com)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+ 
+ /dts-v1/;
+ 
+ #include <dt-bindings/interrupt-controller/irq.h>
+ #include <dt-bindings/pinctrl/pinctrl-gc1601.h>
+ 
+ / {
+	model = "gc1601";
+	compatible = "arm,faraday-soc";
+	#address-cells = <1>;
+	#size-cells = <1>;
+	
+	aliases {
+		serial0 = &uart0;
+		i2c010_0 = &i2c0;
+		i2c010_1 = &i2c1;
+	};
+	
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
+	
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0x40000000 0x02000000>;
+	};
+	
+	chosen {
+		bootargs = "mem=32M console=ttyS0,115200 earlycon=uart8250,mmio32,0x90400000";
+	};
+	
+	clocks {
+		compatible = "faraday,gc1601-clk";
+	
+		osc0: osc0-25mhz {
+			#clock-cells = <0>;
+			compatible = "gc1601,osc0";
+			clock-frequency = <25000000>;
+			clock-output-names = "osc0";
+		};
+	
+		pll0_ckout1: pll0_ckout1 {
+			#clock-cells = <0>;
+			compatible = "gc1601,pll0_ckout1";
+			clock-div = <3>;
+			clock-output-names = "pll0_ckout1";
+			clocks = <&osc0>;
+		};
+	
+		pll0_ckout2: pll0_ckout2 {
+			#clock-cells = <0>;
+			compatible = "gc1601,pll0_ckout2";
+			clock-div = <4>;
+			clock-output-names = "pll0_ckout2";
+			clocks = <&osc0>;
+		};
+	
+		pll0_ckout3: pll0_ckout3 {
+			#clock-cells = <0>;
+			compatible = "gc1601,pll0_ckout3";
+			clock-div = <5>;
+			clock-output-names = "pll0_ckout3";
+			clocks = <&osc0>;
+		};
+	
+		axi: axi {
+			#clock-cells = <0>;
+			compatible = "gc1601,axi";
+			clock-mult = <1>;
+			clock-div = <4>;
+			clock-output-names = "AXI";
+			clocks = <&pll0_ckout1>;
+		};
+	
+		aclk: aclk {
+			#clock-cells = <0>;
+			compatible = "gc1601,aclk";
+			clock-mult = <1>;
+			clock-div = <4>;
+			clock-output-names = "aclk";
+			clocks = <&pll0_ckout1>;
+		};
+	
+		apb: apb {
+			#clock-cells = <0>;
+			compatible = "gc1601,apb";
+			clock-mult = <1>;
+			clock-div = <8>;
+			clock-output-names = "APB";
+			clocks = <&pll0_ckout1>;
+		};
+	
+		pclk: pclk {
+			#clock-cells = <0>;
+			compatible = "gc1601,pclk";
+			clock-mult = <1>;
+			clock-div = <8>;
+			clock-output-names = "pclk";
+			clocks = <&pll0_ckout1>;
+		};
+	
+		cpu: cpu {
+			#clock-cells = <0>;
+			compatible = "gc1601,cpu";
+			clock-mult = <1>;
+			clock-div = <1>;
+			clock-output-names = "cpu";
+			clocks = <&pll0_ckout1>;
+		};
+	
+		ddrmclk: ddrmclk {
+			#clock-cells = <0>;
+			compatible = "gc1601,ddrmclk";
+			clock-mult = <1>;
+			clock-div = <1>;
+			clock-output-names = "ddrmclk";
+			clocks = <&pll0_ckout1>, <&pll0_ckout3>, <&pll0_ckout2>;
+		};
+	
+		spiclk: spiclk {
+			#clock-cells = <0>;
+			compatible = "gc1601,spiclk";
+			clock-mult = <1>;
+			clock-div = <8>;
+			clock-output-names = "spiclk";
+			clocks = <&pll0_ckout2>;
+		};
+	};
+	
+	pinctrl {
+			compatible = "pinctrl-gc1601", "ftscu010-pinmux";
+			reg = <0x90a00000 0x1000>;
+			statis = "disabled";
+			
+			pinctrl_clk_gen: pinctrl_clk_gen {
+				scu010,function = <GC1601_MUX_CLK_GEN>;
+			};
+			
+			pinctrl_fa626te55ee1001hh0lg: pinctrl_fa626te55ee1001hh0lg {
+				scu010,function = <GC1601_MUX_FA626TE55EE1001HH0LG>;
+			};
+			
+			pinctrl_ftgpio010: pinctrl_ftgpio010 {
+				scu010,function = <GC1601_MUX_FTGPIO010>;
+			};
+			
+			pinctrl_ftiic010: pinctrl_ftiic010 {
+				scu010,function = <GC1601_MUX_FTIIC010>;
+			};
+			
+			pinctrl_ftiic010_1: pinctrl_ftiic010_1 {
+				scu010,function = <GC1601_MUX_FTIIC010_1>;
+			};
+			
+			pinctrl_ftuart010: pinctrl_ftuart010 {
+				scu010,function = <GC1601_MUX_FTUART010>;
+			};
+			
+			pinctrl_gc1601_top: pinctrl_gc1601_top {
+				scu010,function = <GC1601_MUX_GC1601_TOP>;
+			};
+			
+			pinctrl_sysc: pinctrl_sysc {
+				scu010,function = <GC1601_MUX_SYSC>;
+			};
+	};
+	
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "simple-bus";
+		ranges;
+	
+		intc: interrupt-controller@96000000 {
+			compatible = "faraday,ftintc030";
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			#address-cells = <1>;
+			cpu-match-id = <0x001>;
+			cpu-match-mask = <0x001>;
+			reg = <0x96000000 0x1000>;
+		};
+	
+		sys_timer0: timer@90200000 {
+			compatible = "faraday,fttmr010";
+			interrupt-parent = <&intc>;
+			interrupts = <39 IRQ_TYPE_LEVEL_HIGH>;
+			reg = <0x90200000 0x100>;
+			clocks = <&apb>;
+			clock-names = "APB";
+			status = "okay";
+		};
+	
+		sys_timer1: timer@90300000 {
+			compatible = "faraday,fttmr010";
+			interrupt-parent = <&intc>;
+			interrupts = <43 IRQ_TYPE_LEVEL_HIGH>;
+			reg = <0x90300000 0x100>;
+			clocks = <&apb>;
+			clock-names = "APB";
+			status = "disabled";
+		};
+	
+		uart0: uart@90400000 {
+			compatible = "of_serial", "ns16550a";
+			interrupt-parent = <&intc>;
+			clock-frequency = <33000000>;
+			reg = <0x90400000 0x1000>;
+			reg-offset = <0>;
+			reg-shift = <2>;
+			reg-io-width = <4>;
+			no-loopback-test;
+			interrupts = <44 IRQ_TYPE_LEVEL_HIGH>;
+			pinctrl-0 = <&pinctrl_ftuart010>;
+			pinctrl-names = "default";
+			status = "okay";
+		};
+	
+		efuse0@91500000 {
+			compatible = "faraday,ftc-efuse";
+			interrupt-parent = <&intc>;
+			reg = <0x91500000 0x10000>;
+			efuse-size = <8>;
+			status = "okay";
+		};
+	
+		gpio@90900000 {
+			compatible = "faraday,ftgpio010";
+			interrupt-parent = <&intc>;
+			reg = <0x90900000 0x1000>;
+			dev_id = <0>;
+			interrupts = <33 IRQ_TYPE_LEVEL_HIGH>;
+			pinctrl-0 = <&pinctrl_ftgpio010>;
+			pinctrl-names = "default";
+			status = "disabled";
+		};
+	
+		i2c0: i2c@90600000 {
+			compatible = "faraday,ftiic010";
+			interrupt-parent = <&intc>;
+			reg = <0x90600000 0x1000>;
+			dev_id = <0>;
+			interrupts = <34 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&pclk>;
+			clock-names = "pclk";
+			pinctrl-0 = <&pinctrl_ftiic010>;
+			pinctrl-names = "default";
+			status = "okay";
+		};
+	
+		i2c1: i2c@90700000 {
+			compatible = "faraday,ftiic010";
+			interrupt-parent = <&intc>;
+			reg = <0x90700000 0x1000>;
+			dev_id = <1>;
+			interrupts = <35 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&pclk>;
+			clock-names = "pclk";
+			pinctrl-0 = <&pinctrl_ftiic010_1>;
+			pinctrl-names = "default";
+			status = "okay";
+		};
+	
+		wdt0: wdt@90800000 {
+			compatible = "faraday,ftwdt010";
+			interrupt-parent = <&intc>;
+			reg = <0x90800000 0x1000>;
+			interrupts = <45 IRQ_TYPE_EDGE_RISING>;
+			clocks = <&pclk>;
+			clock-names = "pclk";
+			status = "disabled";
+		};
+	
+		spi0: spi@a0000000 {
+			compatible = "faraday,ftspi020";
+			interrupt-parent = <&intc>;
+			reg = <0xa0000000 0x1000>;
+			reg-names = "ctrl-port";
+			interrupts = <46 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&spiclk>;
+			clock-names = "spiclk";
+			status = "okay";
+
+			#address-cells = <1>;
+			#size-cells = <0>;
+			s25fl032p: flash@0 { //0x010215
+				compatible = "jedec,spi-nor";
+				spi-max-frequency = <25000000>;
+				spi-tx-bus-width = <2>;
+				spi-rx-bus-width = <2>;
+				reg = <0x0>;
+				is-nand = <0>;
+			};
+		};
+	};
+};

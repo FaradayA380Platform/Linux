@@ -1,0 +1,18 @@
+#
+# arch/arm/mach-tc12ngrc/Kconfig
+#
+
+if MACH_TC12NGRC
+
+menu "Faraday TC12NGRC Platform Options"
+	depends on MACH_TC12NGRC
+
+config UART_CLOCK
+	int "UART clock tick rate"
+	default 18432000 if MACH_TC12NGRC
+	help
+	  The frequency of the UART reference clock.
+
+endmenu
+
+endif
